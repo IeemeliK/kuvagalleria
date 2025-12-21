@@ -1,0 +1,19 @@
+FROM golang:1.25.5 AS build
+WORKDIR /usr/src/app
+
+SHELL [ "/bin/bash", "-c" ]
+
+RUN apt-get -y update && apt-get -y --no-install-recommends install unzip=6.0-29
+RUN wget -qO- https://bun.com/install | ENV="$HOME/.bashrc" SHELL="$(which bash)" bash -
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN source "$HOME/.bashrc" && make
+
+FROM alpine:latest AS run
+WORKDIR /app
+COPY --from=build /usr/src/app/bin/app ./run
+EXPOSE 8080
+# CMD [ "./app" ]
