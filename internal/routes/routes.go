@@ -2,20 +2,15 @@
 package routes
 
 import (
-	"html/template"
+	t "html/template"
 	"log"
 	"net/http"
-	"path/filepath"
+
+	"github.com/IeemeliK/kuvagalleria/internal"
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	// Parse the templates
-	files := []string{
-		filepath.Join("views", "base.html"),
-		filepath.Join("views", "index.html"),
-	}
-
-	tmpl, err := template.ParseFiles(files...)
+	tmpl, err := t.ParseFS(internal.Templates, "index.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println("Template parsing error:", err)
