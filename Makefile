@@ -1,7 +1,7 @@
 cssBuild := bunx @tailwindcss/cli -i ./assets/input.css -o ./internal/static/css/output.css
 .PHONY: build init dev dev_open prod_css dev_css watch_css clean
 build: init prod_css
-	go build -v -o ./bin/app
+	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -v -o ./bin/app
 
 init:
 	go mod tidy
@@ -16,6 +16,7 @@ prod_css:
 	$(cssBuild) --minify
 
 dev_css:
+	bun i
 	$(cssBuild)
 
 watch_css:
