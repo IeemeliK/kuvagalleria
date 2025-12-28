@@ -1,12 +1,26 @@
 // Package internal
 package internal
 
-import "embed"
+import (
+	"embed"
+	"io/fs"
+	"log"
+)
 
 var (
-	//go:embed all:static
-	Static embed.FS
+	//go:embed templates
+	templateFS embed.FS
 
-	//go:embed templates/*.html
-	Templates embed.FS
+	Templates fs.FS
+
+	//go:embed static
+	Static embed.FS
 )
+
+func init() {
+	sub, err := fs.Sub(templateFS, "templates")
+	if err != nil {
+		log.Fatalf("failed to create template fs: %v", err)
+	}
+	Templates = sub
+}

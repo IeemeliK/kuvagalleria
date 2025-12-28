@@ -11,8 +11,7 @@ import (
 func main() {
 	mux := http.NewServeMux()
 
-	fileServer := http.FileServer(http.FS(internal.Static))
-	mux.Handle("GET /static/", http.StripPrefix("/static/", fileServer))
+	mux.Handle("GET /static/", http.FileServerFS(internal.Static))
 
 	mux.HandleFunc("GET /", routes.HomeHandler)
 
