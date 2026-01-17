@@ -3,6 +3,7 @@
 		"@tailwindcss/cli": "^4.1.18",
 		"browser-sync": "^3.0.4",
 		"daisyui": "^5.5.14",
+		"prettier-plugin-go-template": "^0.0.15",
 		"tailwindcss": "^4.1.18"
 	}
 }

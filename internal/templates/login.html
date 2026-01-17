@@ -1,0 +1,21 @@
+{{ define "login" }}
+  <main
+    class="min-h-screen min-w-screen container flex items-center justify-center"
+  >
+    <form id="loginForm" hx-post="/login" hx-target="#loginForm">
+      <fieldset
+        class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4"
+      >
+        <legend class="fieldset-legend">Kirjaudu</legend>
+
+        <label class="label">Käyttäjänimi</label>
+        <input type="email" class="input" placeholder="Käyttäjänimi" />
+
+        <label class="label">Salasana</label>
+        <input type="password" class="input" placeholder="Salasana" />
+
+        <button class="btn btn-neutral mt-4">Kirjaudu sisään</button>
+      </fieldset>
+    </form>
+  </main>
+{{ end }}

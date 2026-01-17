@@ -4,17 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kuvagalleria</title>
-    <script
-      src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"
-      integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz"
-      crossorigin="anonymous"
-    ></script>
+    <script src="/static/js/htmx.min.js"></script>
     <link rel="stylesheet" href="/static/css/output.css" />
   </head>
-  <body class="min-h-screen min-w-screen">
-    <header class="navbar bg-base-100 shadow-sm">
-      <a class="btn btn-ghost text-xl">Kuvagalleria</a>
-    </header>
-    <main class="p-5">{{template "content" .}}</main>
+  <body>
+    {{ if .LoggedIn }}
+      {{ template "header" . }}
+      {{ template "content" . }}
+    {{ else }}
+      {{ template "login" . }}
+    {{ end }}
   </body>
 </html>

@@ -9,10 +9,15 @@ import (
 	"github.com/IeemeliK/kuvagalleria/internal"
 )
 
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFS(internal.Templates, "base.tmpl", "index.tmpl"))
+type PageData struct {
+	LoggedIn bool
+}
 
-	if err := tmpl.Execute(w, nil); err != nil {
+func HomeHandler(w http.ResponseWriter, r *http.Request) {
+	data := PageData{LoggedIn: false}
+	tmpl := template.Must(template.ParseFS(internal.Templates, "*.html"))
+
+	if err := tmpl.Execute(w, data); err != nil {
 		log.Printf("template execute error: %v", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
