@@ -8,11 +8,16 @@
       >
         <legend class="fieldset-legend">Kirjaudu</legend>
 
+        {{if .Error}}
+        <div class="alert alert-error mb-4">
+            <span>{{.Error}}</span>
+        </div>
+        {{end}}
         <label class="label">Käyttäjänimi</label>
-        <input type="email" class="input" placeholder="Käyttäjänimi" />
+        <input type="text" name="username" class="input" placeholder="Käyttäjänimi" required />
 
         <label class="label">Salasana</label>
-        <input type="password" class="input" placeholder="Salasana" />
+        <input type="password" name="password" class="input" placeholder="Salasana" required />
 
         <button class="btn btn-neutral mt-4">Kirjaudu sisään</button>
       </fieldset>
