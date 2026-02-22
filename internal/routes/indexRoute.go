@@ -10,14 +10,9 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-type PageData struct {
-	LoggedIn bool
-	Error    string
-}
-
 func HomeHandler(store *sessions.CookieStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		tmpl := template.Must(template.ParseFS(internal.Templates, "base.html", "index.html"))
+		tmpl := template.Must(template.ParseFS(internal.Templates, "base.html", "index.html", "header.html"))
 
 		if err := tmpl.Execute(w, nil); err != nil {
 			log.Printf("template execute error: %v", err)
