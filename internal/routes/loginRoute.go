@@ -82,7 +82,11 @@ func LoginHandler(store *sessions.CookieStore, database *sql.DB) http.HandlerFun
 		}
 		session.Options.MaxAge = sessionMaxAgeSeconds
 		session.Values["user_id"] = userID
-		session.Save(r, w)
+		if err = session.Save(r, w); err != nil {
+			log.Printf("Session error: %v", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
 
 		// HTMX redirect
 		w.Header().Set("HX-Redirect", "/")
