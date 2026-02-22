@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/IeemeliK/kuvagalleria/internal"
+	"github.com/IeemeliK/kuvagalleria/internal/db"
 	"github.com/IeemeliK/kuvagalleria/internal/routes"
 	"github.com/gorilla/sessions"
 	"github.com/joho/godotenv"
@@ -13,19 +14,23 @@ import (
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("Error loading env file(s)")
 	}
-	// Initialize session store
-	store := sessions.NewCookieStore([]byte(os.Getenv("COOKIESTORE_SECRET")))
 
+	database := db.CreateConnection()
+	defer func() {
+		if err := database.Close(); err != nil {
+			log.Printf("error closing database: %v", err)
+		}
+	}()
+
+	store := sessions.NewCookieStore([]byte(os.Getenv("COOKIESTORE_SECRET")))
 	mux := http.NewServeMux()
 
-	// Serve static files
 	mux.Handle("GET /static/", http.FileServerFS(internal.Static))
-
-	mux.HandleFunc("/", routes.HomeHandler)
+	mux.HandleFunc("/", routes.HomeHandler(store))
 	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		routes.LoginHandler(w, r, store)
+		routes.LoginHandler(w, r, store, database)
 	})
 
 	log.Println("Server starting on :8080...")
