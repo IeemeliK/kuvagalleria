@@ -7,6 +7,7 @@ import (
 
 	"github.com/IeemeliK/kuvagalleria/internal"
 	"github.com/IeemeliK/kuvagalleria/internal/db"
+	"github.com/IeemeliK/kuvagalleria/internal/middleware"
 	"github.com/IeemeliK/kuvagalleria/internal/routes"
 	"github.com/gorilla/sessions"
 	"github.com/joho/godotenv"
@@ -27,13 +28,16 @@ func main() {
 	store := sessions.NewCookieStore([]byte(os.Getenv("COOKIESTORE_SECRET")))
 	mux := http.NewServeMux()
 
+	auth := &middleware.Authenticator{Store: store, DB: database}
+	handler := auth.Middleware(mux)
+
 	mux.Handle("GET /static/", http.FileServerFS(internal.Static))
 	mux.HandleFunc("/", routes.HomeHandler(store))
 	mux.HandleFunc("/login", routes.LoginHandler(store, database))
 	mux.HandleFunc("/logout", routes.LogoutHandler(store))
 
 	log.Println("Server starting on :8080...")
-	if err := http.ListenAndServe(":8080", mux); err != nil {
+	if err := http.ListenAndServe(":8080", handler); err != nil {
 		log.Fatal("http.ListenAndServe:", err)
 	}
 }
