@@ -8,11 +8,6 @@
     <link rel="stylesheet" href="/static/css/output.css" />
   </head>
   <body>
-    {{ if .LoggedIn }}
-      {{ template "header" . }}
-      {{ template "content" . }}
-    {{ else }}
-      {{ template "login" . }}
-    {{ end }}
+    {{ block "body" . }}{{ end }}
   </body>
 </html>

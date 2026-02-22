@@ -75,7 +75,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, store *sessions.Cookie
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-	session.Values["user_id"] = username // Or actual ID if you have one
+	session.Values["user_id"] = username // TODO: change this to actual user id from db
 	session.Save(r, w)
 
 	// HTMX redirect
