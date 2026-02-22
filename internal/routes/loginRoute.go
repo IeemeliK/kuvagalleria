@@ -31,11 +31,7 @@ func LoginHandler(store *sessions.CookieStore, database *sql.DB) http.HandlerFun
 				return
 			}
 
-			tmpl := template.Must(template.ParseFS(internal.Templates, "base.html", "login.html"))
-			if err := tmpl.Execute(w, nil); err != nil {
-				log.Printf("template execute error: %v", err)
-				http.Error(w, "internal server error", http.StatusInternalServerError)
-			}
+			renderLoginRoute(w, "")
 			return
 		}
 
@@ -48,7 +44,7 @@ func LoginHandler(store *sessions.CookieStore, database *sql.DB) http.HandlerFun
 		password := r.FormValue("password")
 
 		if username == "" || password == "" {
-			renderLoginError(w, "Username and password are required")
+			renderLoginRoute(w, "Username and password are required")
 			return
 		}
 
@@ -56,7 +52,7 @@ func LoginHandler(store *sessions.CookieStore, database *sql.DB) http.HandlerFun
 		err = database.QueryRow("SELECT password_hash, user_id FROM users WHERE username = $1", username).Scan(&hashedPassword, &userID)
 		if err != nil {
 			if err == sql.ErrNoRows {
-				renderLoginError(w, "Invalid username or password")
+				renderLoginRoute(w, "Invalid username or password")
 				return
 			}
 			log.Printf("Database error: %v", err)
@@ -65,7 +61,7 @@ func LoginHandler(store *sessions.CookieStore, database *sql.DB) http.HandlerFun
 		}
 
 		if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
-			renderLoginError(w, "Invalid username or password")
+			renderLoginRoute(w, "Invalid username or password")
 			return
 		}
 
@@ -94,12 +90,11 @@ func LoginHandler(store *sessions.CookieStore, database *sql.DB) http.HandlerFun
 	}
 }
 
-func renderLoginError(w http.ResponseWriter, errorMsg string) {
+func renderLoginRoute(w http.ResponseWriter, errorMsg string) {
 	data := PageData{
-		LoggedIn: false,
-		Error:    errorMsg,
+		Error: errorMsg,
 	}
-	tmpl := template.Must(template.ParseFS(internal.Templates, "login.html"))
+	tmpl := template.Must(template.ParseFS(internal.Templates, "login.html", "base.html", "header.html"))
 	if err := tmpl.Execute(w, data); err != nil {
 		log.Printf("Template error: %v", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
