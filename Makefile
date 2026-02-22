@@ -6,7 +6,7 @@ build: init prod_css
 init:
 	go mod tidy
 
-dev: init dev_css dev_open
+dev: init dev_open
 	$(GOPATH)/bin/air
 
 dev_open:
