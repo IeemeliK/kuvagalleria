@@ -10,6 +10,8 @@ services:
   pgAdmin:
     image: dpage/pgadmin4:9.11.0
     env_file: [.env]
+    environment:
+      PGADMIN_DISABLE_POSTFIX: true
     ports: [5433:80]
     volumes: ['${HOME}/docker/kuvagalleria/pgadmin_data:/var/lib/pgadmin']
 volumes:
