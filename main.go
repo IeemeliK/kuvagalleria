@@ -29,9 +29,8 @@ func main() {
 
 	mux.Handle("GET /static/", http.FileServerFS(internal.Static))
 	mux.HandleFunc("/", routes.HomeHandler(store))
-	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		routes.LoginHandler(w, r, store, database)
-	})
+	mux.HandleFunc("/login", routes.LoginHandler(store, database))
+	mux.HandleFunc("/logout", routes.LogoutHandler(store))
 
 	log.Println("Server starting on :8080...")
 	if err := http.ListenAndServe(":8080", mux); err != nil {
