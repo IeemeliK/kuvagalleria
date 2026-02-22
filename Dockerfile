@@ -15,6 +15,6 @@ RUN make
 
 FROM alpine:latest AS run
 WORKDIR /usr/src/app
-COPY --from=build /usr/src/app/bin/app ./app
+COPY --from=build /usr/src/app/bin/app ./
 EXPOSE 8080
 CMD [ "./app" ]
