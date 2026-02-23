@@ -3,21 +3,9 @@ package middleware
 
 import (
 	"context"
-	"database/sql"
 	"log"
 	"net/http"
-
-	"github.com/gorilla/sessions"
 )
-
-type contextKey string
-
-const UserIDKey contextKey = "user_id"
-
-type Authenticator struct {
-	Store *sessions.CookieStore
-	DB    *sql.DB
-}
 
 func (a *Authenticator) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -39,8 +27,14 @@ func (a *Authenticator) Middleware(next http.Handler) http.Handler {
 			return
 		}
 
-		var exists bool
-		err = a.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE user_id = $1)", userID).Scan(&exists)
+		var (
+			exists   bool
+			username string
+		)
+		err = a.DB.QueryRow(
+			"SELECT EXISTS(SELECT 1 FROM users WHERE user_id = $1), username FROM users WHERE user_id = $1",
+			userID,
+		).Scan(&exists, &username)
 		if err != nil {
 			log.Printf("Database error: %v", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -52,18 +46,19 @@ func (a *Authenticator) Middleware(next http.Handler) http.Handler {
 		}
 
 		ctx := context.WithValue(r.Context(), UserIDKey, userID)
+		ctx = context.WithValue(ctx, UsernameKey, username)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
 func (a *Authenticator) unauthorized(w http.ResponseWriter, r *http.Request) {
-	if isHTMXRequest(r) {
+	if isAPIRequest(r) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
-func isHTMXRequest(r *http.Request) bool {
+func isAPIRequest(r *http.Request) bool {
 	return r.Header.Get("HX-Request") == "true" || r.Header.Get("Accept") == "application/json"
 }
