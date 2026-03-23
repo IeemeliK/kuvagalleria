@@ -28,6 +28,7 @@ func LogoutHandler(store *sessions.CookieStore) http.HandlerFunc {
 			return
 		}
 
-		http.Redirect(w, r, "/login", http.StatusFound)
+		w.Header().Set("HX-Redirect", "/login")
+		w.WriteHeader(http.StatusSeeOther)
 	}
 }
