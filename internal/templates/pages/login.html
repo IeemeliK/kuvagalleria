@@ -1,0 +1,47 @@
+{{ template "base.html" . }}
+
+{{ define "body" }}
+  <main
+    class="min-h-screen min-w-screen container flex items-center justify-center"
+  >
+    {{ template "login_form" . }}
+  </main>
+{{ end }}
+
+{{ define "login_form" }}
+  <form
+    id="loginForm"
+    hx-post="/login"
+    hx-target="#loginForm"
+    hx-swap="outerHTML"
+  >
+    <fieldset
+      class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4"
+    >
+      <legend class="fieldset-legend">Kirjaudu</legend>
+
+      {{ if .Error }}
+        <div class="alert alert-error mb-4">
+          <span>{{ .Error }}</span>
+        </div>
+      {{ end }}
+      <label class="label">Käyttäjänimi</label>
+      <input
+        type="text"
+        name="username"
+        class="input"
+        placeholder="Käyttäjänimi"
+      />
+
+      <label class="label">Salasana</label>
+      <input
+        type="password"
+        name="password"
+        class="input"
+        placeholder="Salasana"
+      />
+
+      <button class="btn btn-neutral mt-4">Kirjaudu sisään</button>
+    </fieldset>
+  </form>
+{{ end }}

@@ -1,0 +1,15 @@
+{{ define "header" }}
+  <header class="navbar bg-base-100 shadow-sm">
+    <div class="flex-1">
+      <a class="btn btn-ghost text-xl">Kuvagalleria</a>
+    </div>
+    {{ if .LoggedIn }}
+      <div class="flex-none gap-2">
+        <span class="text-sm">{{ .Username }}</span>
+        <button class="btn btn-soft btn-error" hx-post="/logout">
+          Kirjaudu ulos
+        </button>
+      </div>
+    {{ end }}
+  </header>
+{{ end }}
