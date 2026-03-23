@@ -1,6 +1,7 @@
 # Agent Guidelines
 
 ## Build & Test Commands
+
 - **Build**: `make build` (outputs binary to `./bin/app`)
 - **Dev Server**: `make dev` (runs `air` with hot reload + CSS watch)
 - **CSS**: `make watch_css` (uses `bun` & `@tailwindcss/cli`)
@@ -8,6 +9,7 @@
   - **Single Test**: `go test -v -run TestName ./internal/pkg/...`
 
 ## Code Style & Conventions
+
 - **Language**: Go (backend), standard `gofmt` formatting.
 - **Frontend**: HTMX for interactivity, TailwindCSS for styling.
 - **Structure**:
@@ -17,6 +19,12 @@
 - **Dependencies**: Managed via `go.mod` (backend) and `bun.lock` (frontend).
 
 ## Agent Rules
+
 - Always run `make build` to verify compilation after changes.
 - Do not introduce new heavy frameworks; stick to existing patterns.
 - Check `Makefile` for available commands before running custom scripts.
+
+## Plan Mode
+
+- Make the plan extremely concise. Sacrifice grammar for the sake of concision.
+- At the end of each plan, give me a list of unresolved questions to answer, if any.
