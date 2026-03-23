@@ -32,7 +32,7 @@ func main() {
 	handler := auth.Middleware(mux)
 
 	mux.Handle("GET /static/", http.FileServerFS(internal.Static))
-	mux.HandleFunc("/", routes.HomeHandler(store))
+	mux.HandleFunc("/", routes.HomeHandler())
 	mux.HandleFunc("/login", routes.LoginHandler(store, database))
 	mux.HandleFunc("/logout", routes.LogoutHandler(store))
 
