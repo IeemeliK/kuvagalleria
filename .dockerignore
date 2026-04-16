@@ -1,6 +1,7 @@
 ./static/css/output.css
 node_modules
 bin
+data
 tmp
 .air.toml
 .git

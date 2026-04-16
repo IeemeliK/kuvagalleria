@@ -4,7 +4,7 @@ services:
     image: postgres
     restart: unless-stopped
     shm_size: 128mb
-    volumes: ['${HOME}/docker/kuvagalleria/postgres_data:/var/lib/postgresql']
+    volumes: [./data/pg_data:/var/lib/postgresql]
     ports: [5432:5432]
     env_file: [.env]
   pgAdmin:
@@ -13,7 +13,7 @@ services:
     environment:
       PGADMIN_DISABLE_POSTFIX: true
     ports: [5433:80]
-    volumes: ['${HOME}/docker/kuvagalleria/pgadmin_data:/var/lib/pgadmin']
+    volumes: [./data/pgadmin_data:/var/lib/pgadmin]
 volumes:
   pgadmin_data:
   postgres_data:
