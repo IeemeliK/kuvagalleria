@@ -5,14 +5,15 @@ services:
     restart: unless-stopped
     # set shared memory limit when using docker compose
     shm_size: 128mb
-    volumes: [./data/pg_data:/var/lib/postgresql]
+    volumes: [postgres_data:/var/lib/postgresql]
     ports: [5432:5432]
     env_file: [.env]
-  pgAdmin:
-    image: dpage/pgadmin4:9.11.0
-    volumes: [./data/pgadmin_data:/var/lib/pgadmin]
-    ports: [5433:80]
-    env_file: .env
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
   web:
     depends_on:
       db:
@@ -20,3 +21,5 @@ services:
     env_file: [.env]
     build: .
     ports: [8080:8080]
+volumes:
+  postgres_data:
