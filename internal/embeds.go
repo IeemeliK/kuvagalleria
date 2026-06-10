@@ -3,8 +3,8 @@ package internal
 
 import (
 	"embed"
+	"fmt"
 	"io/fs"
-	"log"
 )
 
 var (
@@ -17,10 +17,11 @@ var (
 	Static embed.FS
 )
 
-func init() {
+func InitTemplates() error {
 	sub, err := fs.Sub(templateFS, "templates")
 	if err != nil {
-		log.Fatalf("failed to create template fs: %v", err)
+		return fmt.Errorf("create template sub fs: %w", err)
 	}
 	Templates = sub
+	return nil
 }

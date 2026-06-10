@@ -32,7 +32,7 @@ func (a *Authenticator) Middleware(next http.Handler) http.Handler {
 			exists   bool
 			username string
 		)
-		err = a.DB.QueryRow(
+		err = a.DB.QueryRowContext(r.Context(),
 			"SELECT EXISTS(SELECT 1 FROM users WHERE user_id = $1), username FROM users WHERE user_id = $1",
 			userID,
 		).Scan(&exists, &username)

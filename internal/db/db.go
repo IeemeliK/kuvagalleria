@@ -5,34 +5,37 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
-	"os"
 	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-func CreateConnection() *sql.DB {
+type Config struct {
+	User     string
+	Password string
+	Host     string
+	Port     string
+	DBName   string
+}
+
+func NewConnection(ctx context.Context, cfg Config) (*sql.DB, error) {
 	dbURL := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s",
-		os.Getenv("POSTGRES_USER"),
-		os.Getenv("POSTGRES_PASSWORD"),
-		os.Getenv("HOST"),
-		os.Getenv("PORT"),
-		os.Getenv("POSTGRES_DB"),
+		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DBName,
 	)
 
 	db, err := sql.Open("pgx", dbURL)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		return nil, fmt.Errorf("open database: %w", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	pingCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	if err := db.PingContext(ctx); err != nil {
-		log.Fatalf("Failed to ping database within 5s: %v", err)
+	if err := db.PingContext(pingCtx); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("ping database: %w", err)
 	}
 
-	return db
+	return db, nil
 }

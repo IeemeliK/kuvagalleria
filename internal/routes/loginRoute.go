@@ -59,7 +59,7 @@ func handleLoginPost(w http.ResponseWriter, r *http.Request, store *sessions.Coo
 		return
 	}
 
-	userID, err := db.AuthenticateUser(database, username, password)
+	userID, err := db.AuthenticateUser(r.Context(), database, username, password)
 	if err != nil {
 		if errors.Is(err, db.ErrInvalidCredentials) {
 			renderLogin(w, r, InvalidCredentialsError)
@@ -70,7 +70,7 @@ func handleLoginPost(w http.ResponseWriter, r *http.Request, store *sessions.Coo
 		return
 	}
 
-	if err := getSession(w, r, store, userID); err != nil {
+	if err := saveUserSession(w, r, store, userID); err != nil {
 		log.Printf("Session error: %v", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
@@ -80,7 +80,7 @@ func handleLoginPost(w http.ResponseWriter, r *http.Request, store *sessions.Coo
 	w.WriteHeader(http.StatusOK)
 }
 
-func getSession(w http.ResponseWriter, r *http.Request, store *sessions.CookieStore, userID string) error {
+func saveUserSession(w http.ResponseWriter, r *http.Request, store *sessions.CookieStore, userID string) error {
 	session, err := store.Get(r, "session-name")
 	if err != nil {
 		return err

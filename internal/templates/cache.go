@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"html/template"
 	"io/fs"
-	"log"
 	"net/http"
 	"path/filepath"
 	"sync"
@@ -20,11 +19,9 @@ type TemplateCache struct {
 
 var cache *TemplateCache
 
-func init() {
+func Init() error {
 	cache = NewTemplateCache()
-	if err := cache.LoadAll(); err != nil {
-		log.Fatalf("failed to load templates: %v", err)
-	}
+	return cache.LoadAll()
 }
 
 func NewTemplateCache() *TemplateCache {
@@ -94,5 +91,8 @@ func (tc *TemplateCache) Render(w http.ResponseWriter, name string, layout strin
 }
 
 func Render(w http.ResponseWriter, name string, layout string, data any) error {
+	if cache == nil {
+		return fmt.Errorf("template cache not initialized")
+	}
 	return cache.Render(w, name, layout, data)
 }

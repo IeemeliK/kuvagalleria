@@ -1,4 +1,3 @@
-// Package routes route handlers
 package routes
 
 import (
@@ -11,7 +10,11 @@ import (
 
 func HomeHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		username := r.Context().Value(middleware.UsernameKey).(string)
+		username, ok := middleware.UsernameFromContext(r.Context())
+		if !ok {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
 
 		data := PageData{
 			Username: username,

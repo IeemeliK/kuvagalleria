@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"github.com/IeemeliK/kuvagalleria/internal/db"
 	"github.com/IeemeliK/kuvagalleria/internal/middleware"
 	"github.com/IeemeliK/kuvagalleria/internal/routes"
+	"github.com/IeemeliK/kuvagalleria/internal/templates"
 	"github.com/gorilla/sessions"
 	"github.com/joho/godotenv"
 )
@@ -18,10 +20,27 @@ func main() {
 		log.Fatal("Error loading env file(s)")
 	}
 
-	database := db.CreateConnection()
+	if err := internal.InitTemplates(); err != nil {
+		log.Fatalf("init templates: %v", err)
+	}
+	if err := templates.Init(); err != nil {
+		log.Fatalf("init templates: %v", err)
+	}
+
+	cfg := db.Config{
+		User:     os.Getenv("POSTGRES_USER"),
+		Password: os.Getenv("POSTGRES_PASSWORD"),
+		Host:     os.Getenv("HOST"),
+		Port:     os.Getenv("PORT"),
+		DBName:   os.Getenv("POSTGRES_DB"),
+	}
+	database, err := db.NewConnection(context.Background(), cfg)
+	if err != nil {
+		log.Fatalf("connect to database: %v", err)
+	}
 	defer func() {
-		if err := database.Close(); err != nil {
-			log.Printf("error closing database: %v", err)
+		if cerr := database.Close(); cerr != nil {
+			log.Printf("error closing database: %v", cerr)
 		}
 	}()
 
