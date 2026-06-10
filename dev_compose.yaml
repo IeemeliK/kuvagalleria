@@ -1,12 +1,11 @@
 ---
+# Development overlay for docker-compose.yaml.
+# Usage: docker compose -f docker-compose.yaml -f dev_compose.yaml up
 services:
-  db:
-    image: postgres
-    restart: unless-stopped
-    shm_size: 128mb
-    volumes: [postgres_data:/var/lib/postgresql]
-    ports: [5432:5432]
-    env_file: [.env]
+  web:
+    build:
+      dockerfile: Dockerfile.dev
+    volumes: [.:/usr/src/app, /usr/src/app/node_modules]
   pgAdmin:
     image: dpage/pgadmin4:9.11.0
     env_file: [.env]
@@ -16,4 +15,3 @@ services:
     volumes: [pgadmin_data:/var/lib/pgadmin]
 volumes:
   pgadmin_data:
-  postgres_data:
