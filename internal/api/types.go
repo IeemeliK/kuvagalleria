@@ -1,4 +1,4 @@
-package routes
+package api
 
 type PageData struct {
 	Username string

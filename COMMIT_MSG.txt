@@ -1,0 +1,14 @@
+refactor: restructure to standard Go layout, add service/config layers, improve error handling
+
+- cmd/server/main.go: move entry point to standard location
+- internal/api/: HTTP handlers (was routes/)
+- internal/repository/: data access layer (was db/)
+- internal/service/: business logic layer with bcrypt verification
+- internal/config/: env var validation and config struct
+- internal/templates/: accepts fs.FS parameter instead of package-level embed
+- web/: templates and static assets moved out of internal/
+- deployments/: Docker and Compose files
+- configs/: env template
+- Makefile: updated build target, compose paths, CSS output; added test/lint/fmt targets
+- tests: updated for new signatures, race-clean
+- .air.toml: build from ./cmd/server

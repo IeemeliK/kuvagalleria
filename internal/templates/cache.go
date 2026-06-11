@@ -8,8 +8,6 @@ import (
 	"net/http"
 	"path/filepath"
 	"sync"
-
-	"github.com/IeemeliK/kuvagalleria/internal"
 )
 
 type TemplateCache struct {
@@ -19,9 +17,9 @@ type TemplateCache struct {
 
 var cache *TemplateCache
 
-func Init() error {
+func Init(templatesFS fs.FS) error {
 	cache = NewTemplateCache()
-	return cache.LoadAll()
+	return cache.LoadAll(templatesFS)
 }
 
 func NewTemplateCache() *TemplateCache {
@@ -30,13 +28,13 @@ func NewTemplateCache() *TemplateCache {
 	}
 }
 
-func (tc *TemplateCache) LoadAll() error {
-	layouts, err := fs.Glob(internal.Templates, "layouts/*.html")
+func (tc *TemplateCache) LoadAll(templatesFS fs.FS) error {
+	layouts, err := fs.Glob(templatesFS, "layouts/*.html")
 	if err != nil {
 		return fmt.Errorf("failed to find layouts: %w", err)
 	}
 
-	pages, err := fs.Glob(internal.Templates, "pages/*.html")
+	pages, err := fs.Glob(templatesFS, "pages/*.html")
 	if err != nil {
 		return fmt.Errorf("failed to find pages: %w", err)
 	}
@@ -46,7 +44,7 @@ func (tc *TemplateCache) LoadAll() error {
 		files := append(layouts, page)
 
 		tmpl := template.New(name).Funcs(template.FuncMap{})
-		_, err = tmpl.ParseFS(internal.Templates, files...)
+		_, err = tmpl.ParseFS(templatesFS, files...)
 		if err != nil {
 			return fmt.Errorf("failed to parse template %s: %w", name, err)
 		}

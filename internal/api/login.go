@@ -1,14 +1,14 @@
-package routes
+package api
 
 import (
-	"database/sql"
 	"errors"
 	"log"
 	"net/http"
 
-	"github.com/IeemeliK/kuvagalleria/internal/db"
-	"github.com/IeemeliK/kuvagalleria/internal/templates"
 	"github.com/gorilla/sessions"
+
+	"github.com/IeemeliK/kuvagalleria/internal/service"
+	"github.com/IeemeliK/kuvagalleria/internal/templates"
 )
 
 const (
@@ -16,13 +16,13 @@ const (
 	MissingCredentialsError = "Käyttäjänimi ja salasana vaaditaan"
 )
 
-func LoginHandler(store *sessions.CookieStore, database *sql.DB) http.HandlerFunc {
+func LoginHandler(store *sessions.CookieStore, auth *service.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			handleLoginGet(w, r, store)
 		case http.MethodPost:
-			handleLoginPost(w, r, store, database)
+			handleLoginPost(w, r, store, auth)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
@@ -45,7 +45,7 @@ func handleLoginGet(w http.ResponseWriter, r *http.Request, store *sessions.Cook
 	renderLogin(w, r, "")
 }
 
-func handleLoginPost(w http.ResponseWriter, r *http.Request, store *sessions.CookieStore, database *sql.DB) {
+func handleLoginPost(w http.ResponseWriter, r *http.Request, store *sessions.CookieStore, auth *service.AuthService) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
@@ -59,13 +59,13 @@ func handleLoginPost(w http.ResponseWriter, r *http.Request, store *sessions.Coo
 		return
 	}
 
-	userID, err := db.AuthenticateUser(r.Context(), database, username, password)
+	userID, err := auth.Authenticate(r.Context(), username, password)
 	if err != nil {
-		if errors.Is(err, db.ErrInvalidCredentials) {
+		if errors.Is(err, service.ErrInvalidCredentials) {
 			renderLogin(w, r, InvalidCredentialsError)
 			return
 		}
-		log.Printf("Database error: %v", err)
+		log.Printf("Authentication error: %v", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
