@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/IeemeliK/kuvagalleria/internal"
+	"github.com/IeemeliK/kuvagalleria/web"
 )
 
 func TestNewTemplateCache(t *testing.T) {
@@ -30,12 +30,8 @@ func TestCacheGet(t *testing.T) {
 }
 
 func TestLoadAll(t *testing.T) {
-	if err := internal.InitTemplates(); err != nil {
-		t.Fatalf("InitTemplates() failed: %v", err)
-	}
-
 	tc := NewTemplateCache()
-	if err := tc.LoadAll(); err != nil {
+	if err := tc.LoadAll(web.Templates()); err != nil {
 		t.Fatalf("LoadAll() failed: %v", err)
 	}
 
@@ -63,11 +59,7 @@ func TestLoadAll(t *testing.T) {
 }
 
 func TestRender(t *testing.T) {
-	if err := internal.InitTemplates(); err != nil {
-		t.Fatalf("InitTemplates() failed: %v", err)
-	}
-
-	if err := Init(); err != nil {
+	if err := Init(web.Templates()); err != nil {
 		t.Fatalf("Init() failed: %v", err)
 	}
 
@@ -107,11 +99,7 @@ func TestRenderNotInitialized(t *testing.T) {
 }
 
 func TestRenderToBuffer(t *testing.T) {
-	if err := internal.InitTemplates(); err != nil {
-		t.Fatalf("InitTemplates() failed: %v", err)
-	}
-
-	if err := Init(); err != nil {
+	if err := Init(web.Templates()); err != nil {
 		t.Fatalf("Init() failed: %v", err)
 	}
 

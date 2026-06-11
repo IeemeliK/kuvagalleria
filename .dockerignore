@@ -1,4 +1,4 @@
-./static/css/output.css
+web/static/css/output.css
 node_modules
 bin
 data

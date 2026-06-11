@@ -1,5 +1,5 @@
 // Package db provides database handling for the app
-package db
+package repository
 
 import (
 	"context"

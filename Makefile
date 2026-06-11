@@ -1,10 +1,11 @@
-composeFile := docker-compose.yaml
-composeDevFile := dev_compose.yaml
+composeFile := deployments/docker-compose.yaml
+composeDevFile := deployments/dev_compose.yaml
 composeFlags := -f $(composeFile) -f $(composeDevFile)
-cssBuild := bunx @tailwindcss/cli -i ./assets/input.css -o ./internal/static/css/output.css
+cssBuild := bunx @tailwindcss/cli -i ./assets/input.css -o ./web/static/css/output.css
+
 .PHONY: build
 build: init prod_css
-	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -v -o ./bin/app
+	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -v -o ./bin/app ./cmd/server
 
 .PHONY: init
 init:
@@ -38,6 +39,18 @@ dev_css:
 .PHONY: watch_css
 watch_css:
 	$(cssBuild) --watch
+
+.PHONY: test
+test:
+	go test -v -race -count=1 ./...
+
+.PHONY: lint
+lint:
+	golangci-lint run ./...
+
+.PHONY: fmt
+fmt:
+	go fmt ./...
 
 .PHONY: clean
 clean:
