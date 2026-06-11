@@ -3,6 +3,8 @@ package middleware
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"log"
 	"net/http"
 	"strings"
@@ -17,9 +19,8 @@ func (a *Authenticator) Middleware(next http.Handler) http.Handler {
 
 		session, err := a.Store.Get(r, "session-name")
 		if err != nil {
-			log.Printf("Session error: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
+			log.Printf("Session decode error (treating as unauthenticated): %v", err)
+			session.Values = make(map[any]any)
 		}
 
 		userID, ok := session.Values["user_id"].(string)
@@ -28,21 +29,18 @@ func (a *Authenticator) Middleware(next http.Handler) http.Handler {
 			return
 		}
 
-		var (
-			exists   bool
-			username string
-		)
+		var username string
 		err = a.DB.QueryRowContext(r.Context(),
-			"SELECT EXISTS(SELECT 1 FROM users WHERE user_id = $1), username FROM users WHERE user_id = $1",
+			"SELECT username FROM users WHERE user_id = $1",
 			userID,
-		).Scan(&exists, &username)
+		).Scan(&username)
+		if errors.Is(err, sql.ErrNoRows) {
+			a.unauthorized(w, r)
+			return
+		}
 		if err != nil {
 			log.Printf("Database error: %v", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-		if !exists {
-			a.unauthorized(w, r)
 			return
 		}
 
