@@ -4,8 +4,9 @@
 services:
   web:
     build:
-      dockerfile: Dockerfile.dev
-    volumes: [.:/usr/src/app, /usr/src/app/node_modules]
+      context: ..
+      dockerfile: deployments/Dockerfile.dev
+    volumes: [..:/usr/src/app, /usr/src/app/node_modules]
   pgAdmin:
     image: dpage/pgadmin4:9.11.0
     env_file: [.env]
