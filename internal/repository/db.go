@@ -1,4 +1,4 @@
-// Package db provides database handling for the app
+// Package repository provides database handling for the app
 package repository
 
 import (
