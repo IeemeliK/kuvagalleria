@@ -6,8 +6,9 @@ import (
 )
 
 type Config struct {
-	Database DatabaseConfig
-	Session  SessionConfig
+	Database  DatabaseConfig
+	Session   SessionConfig
+	UploadDir string
 }
 
 type DatabaseConfig struct {
@@ -40,6 +41,11 @@ func Load() (Config, error) {
 		required[k] = v
 	}
 
+	uploadDir := os.Getenv("UPLOADS_DIR")
+	if uploadDir == "" {
+		uploadDir = "./data/uploads"
+	}
+
 	return Config{
 		Database: DatabaseConfig{
 			User:     required["POSTGRES_USER"],
@@ -51,5 +57,6 @@ func Load() (Config, error) {
 		Session: SessionConfig{
 			Secret: required["COOKIESTORE_SECRET"],
 		},
+		UploadDir: uploadDir,
 	}, nil
 }

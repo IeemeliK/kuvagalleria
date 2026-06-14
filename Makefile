@@ -19,6 +19,7 @@ init:
 dev_up:
 	docker compose $(composeFlags) up --build -d
 	$(MAKE) migrate-up
+	$(MAKE) seed
 
 .PHONY: dev_down
 dev_down:
@@ -43,6 +44,10 @@ migrate-create:
 .PHONY: migrate-reset
 migrate-reset:
 	goose -dir $(MIGRATIONS_DIR) postgres "$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(HOST):$(PORT)/$(POSTGRES_DB)" reset
+
+.PHONY: seed
+seed:
+	go run ./scripts/seed/main.go
 
 .PHONY: prod_css
 prod_css:

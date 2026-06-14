@@ -6,7 +6,7 @@ services:
     build:
       context: ..
       dockerfile: deployments/Dockerfile.dev
-    volumes: [..:/usr/src/app, /usr/src/app/node_modules]
+    volumes: [..:/usr/src/app, /usr/src/app/node_modules, ../data/uploads:/usr/src/app/data/uploads]
   pgAdmin:
     image: dpage/pgadmin4:9.11.0
     env_file: [.env]
