@@ -2,6 +2,10 @@ composeFile := deployments/docker-compose.yaml
 composeDevFile := deployments/dev_compose.yaml
 composeFlags := -f $(composeFile) -f $(composeDevFile)
 cssBuild := bunx @tailwindcss/cli -i ./assets/input.css -o ./web/static/css/output.css
+MIGRATIONS_DIR := ./migrations
+
+include .env
+export
 
 .PHONY: build
 build: init prod_css
@@ -11,21 +15,34 @@ build: init prod_css
 init:
 	go mod tidy
 
-.PHONY: dev
-dev: init dev_open
-	$(GOPATH)/bin/air
-
 .PHONY: dev_up
 dev_up:
 	docker compose $(composeFlags) up --build -d
+	$(MAKE) migrate-up
 
 .PHONY: dev_down
 dev_down:
 	docker compose $(composeFlags) down
 
-.PHONY: dev_open
-dev_open:
-	open http://localhost:8080
+.PHONY: migrate-up
+migrate-up:
+	goose -dir $(MIGRATIONS_DIR) postgres "$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(HOST):$(PORT)/$(POSTGRES_DB)" up
+
+.PHONY: migrate-down
+migrate-down:
+	goose -dir $(MIGRATIONS_DIR) postgres "$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(HOST):$(PORT)/$(POSTGRES_DB)" down
+
+.PHONY: migrate-status
+migrate-status:
+	goose -dir $(MIGRATIONS_DIR) postgres "$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(HOST):$(PORT)/$(POSTGRES_DB)" status
+
+.PHONY: migrate-create
+migrate-create:
+	goose -dir $(MIGRATIONS_DIR) create $(name) sql
+
+.PHONY: migrate-reset
+migrate-reset:
+	goose -dir $(MIGRATIONS_DIR) postgres "$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(HOST):$(PORT)/$(POSTGRES_DB)" reset
 
 .PHONY: prod_css
 prod_css:
