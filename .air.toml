@@ -6,7 +6,7 @@ tmp_dir = "tmp"
 
 [build]
   args_bin = []
-  cmd = "go build -o ./tmp/main ./cmd/server"
+  cmd = "go build -o ./tmp/main -buildvcs=false ./cmd/server"
   delay = 1000
   entrypoint = ["./tmp/main"]
   exclude_dir = ["assets", "tmp", "vendor", "testdata", "node_modules", "static"]
@@ -23,7 +23,7 @@ tmp_dir = "tmp"
   poll = false
   poll_interval = 0
   post_cmd = []
-  pre_cmd = ["sh -c 'make watch_css &'"]
+  pre_cmd = ["make watch_css &"]
   pre_cmd_delay = 0
   rerun = false
   rerun_delay = 500

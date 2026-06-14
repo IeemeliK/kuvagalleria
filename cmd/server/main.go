@@ -55,7 +55,7 @@ func main() {
 
 	authSvc := service.NewAuthService(database)
 
-	mux.Handle("GET /static/", http.FileServerFS(web.Static))
+	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(web.StaticFS())))
 	mux.HandleFunc("/", api.HomeHandler())
 	mux.HandleFunc("/login", api.LoginHandler(store, authSvc))
 	mux.HandleFunc("/logout", api.LogoutHandler(store))
