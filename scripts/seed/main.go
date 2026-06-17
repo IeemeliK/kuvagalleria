@@ -25,7 +25,7 @@ func main() {
 	db, err := repository.NewConnection(context.Background(), repository.Config{
 		User:     cfg.Database.User,
 		Password: cfg.Database.Password,
-		Host:     cfg.Database.Host,
+		Host:     "localhost",
 		Port:     cfg.Database.Port,
 		DBName:   cfg.Database.DBName,
 	})
@@ -39,7 +39,8 @@ func main() {
 		log.Fatalf("hash password: %v", err)
 	}
 
-	_, err = db.ExecContext(context.Background(),
+	_, err = db.ExecContext(
+		context.Background(),
 		`INSERT INTO users (username, password_hash)
 		 VALUES ($1, $2)
 		 ON CONFLICT (username) DO UPDATE SET password_hash = $2`,
