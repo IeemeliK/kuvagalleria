@@ -1,6 +1,6 @@
 package api
 
-type PageData struct {
+type HeaderData struct {
 	Username string
 	LoggedIn bool
 	Error    string

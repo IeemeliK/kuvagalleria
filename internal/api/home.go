@@ -8,6 +8,10 @@ import (
 	"github.com/IeemeliK/kuvagalleria/internal/templates"
 )
 
+type HomePageData struct {
+	HeaderData HeaderData
+}
+
 func HomeHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		username, ok := middleware.UsernameFromContext(r.Context())
@@ -16,9 +20,11 @@ func HomeHandler() http.HandlerFunc {
 			return
 		}
 
-		data := PageData{
-			Username: username,
-			LoggedIn: true,
+		data := HomePageData{
+			HeaderData: HeaderData{
+				Username: username,
+				LoggedIn: true,
+			},
 		}
 
 		if err := templates.Render(w, "index.html", "", data); err != nil {

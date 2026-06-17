@@ -16,6 +16,11 @@ const (
 	MissingCredentialsError = "Käyttäjänimi ja salasana vaaditaan"
 )
 
+type loginPageData struct {
+	Error      string
+	HeaderData HeaderData
+}
+
 func LoginHandler(store *sessions.CookieStore, auth *service.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -98,9 +103,11 @@ func saveUserSession(w http.ResponseWriter, r *http.Request, store *sessions.Coo
 }
 
 func renderLogin(w http.ResponseWriter, r *http.Request, errorMsg string) {
-	data := PageData{
-		LoggedIn: false,
-		Error:    errorMsg,
+	data := loginPageData{
+		Error: errorMsg,
+		HeaderData: HeaderData{
+			LoggedIn: false,
+		},
 	}
 
 	layout := ""

@@ -3,13 +3,13 @@
     <div class="flex-1">
       <a class="btn btn-ghost text-xl">Kuvagalleria</a>
     </div>
-    {{ if .LoggedIn }}
-      <div class="flex-none gap-2">
-        <span class="text-sm">{{ .Username }}</span>
-        <button class="btn btn-soft btn-error" hx-post="/logout">
+    {{ if .HeaderData.LoggedIn }}
+      <div>
+        <span class="text-sm">{{ .HeaderData.Username }}</span>
+        <button class="btn btn-soft btn-error mx-2.5" hx-post="/logout">
           Kirjaudu ulos
         </button>
       </div>
-    {{ end }}
+    {{- end -}}
   </header>
 {{ end }}
