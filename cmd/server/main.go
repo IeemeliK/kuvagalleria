@@ -48,20 +48,26 @@ func main() {
 	}
 
 	store := sessions.NewCookieStore([]byte(cfg.Session.Secret))
-	mux := http.NewServeMux()
 
 	auth := &middleware.Authenticator{Store: store, DB: database}
-	handler := auth.Middleware(mux)
-
 	authSvc := service.NewAuthService(database)
 
+	mux := http.NewServeMux()
+
+	// Static files (public)
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(web.StaticFS())))
-	mux.HandleFunc("/", api.HomeHandler())
+
+	// Public routes
 	mux.HandleFunc("/login", api.LoginHandler(store, authSvc))
 	mux.HandleFunc("/logout", api.LogoutHandler(store))
 
+	// Protected routes (auth middleware applied to the whole group)
+	protected := http.NewServeMux()
+	protected.HandleFunc("GET /", api.HomeHandler())
+	mux.Handle("/", auth.Middleware(protected))
+
 	log.Println("Server starting on :8080...")
-	if err := http.ListenAndServe(":8080", handler); err != nil {
+	if err := http.ListenAndServe(":8080", mux); err != nil {
 		log.Fatal("http.ListenAndServe:", err)
 	}
 }
