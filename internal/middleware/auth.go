@@ -1,11 +1,10 @@
-// Package middleware
 package middleware
 
 import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
 )
 
@@ -13,7 +12,7 @@ func (a *Authenticator) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, err := a.Store.Get(r, "session-name")
 		if err != nil {
-			log.Printf("Session decode error (treating as unauthenticated): %v", err)
+			slog.Warn("session decode", "error", err)
 			session.Values = make(map[any]any)
 		}
 
@@ -33,7 +32,7 @@ func (a *Authenticator) Middleware(next http.Handler) http.Handler {
 			return
 		}
 		if err != nil {
-			log.Printf("Database error: %v", err)
+			slog.Error("database query", "error", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}

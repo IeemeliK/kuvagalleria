@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log"
+	"log/slog"
+	"os"
 
 	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
@@ -14,12 +14,14 @@ import (
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading env file(s)")
+		slog.Error("loading env file", "error", err)
+		os.Exit(1)
 	}
 
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("load config: %v", err)
+		slog.Error("loading config", "error", err)
+		os.Exit(1)
 	}
 
 	db, err := repository.NewConnection(context.Background(), repository.Config{
@@ -30,13 +32,15 @@ func main() {
 		DBName:   cfg.Database.DBName,
 	})
 	if err != nil {
-		log.Fatalf("connect to database: %v", err)
+		slog.Error("connecting to database", "error", err)
+		os.Exit(1)
 	}
 	defer db.Close()
 
 	hash, err := bcrypt.GenerateFromPassword([]byte("admin"), bcrypt.DefaultCost)
 	if err != nil {
-		log.Fatalf("hash password: %v", err)
+		slog.Error("hashing password", "error", err)
+		os.Exit(1)
 	}
 
 	_, err = db.ExecContext(
@@ -47,8 +51,9 @@ func main() {
 		"admin", string(hash),
 	)
 	if err != nil {
-		log.Fatalf("seed user: %v", err)
+		slog.Error("seeding user", "error", err)
+		os.Exit(1)
 	}
 
-	fmt.Println("Seeded admin user (username: admin, password: admin)")
+	slog.Info("seeded admin user")
 }

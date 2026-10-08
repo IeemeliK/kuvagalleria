@@ -1,34 +1,21 @@
 package api
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 
-	"github.com/gorilla/sessions"
+	"github.com/IeemeliK/kuvagalleria/internal/service"
 )
 
-func LogoutHandler(store *sessions.CookieStore) http.HandlerFunc {
+func LogoutHandler(authSvc *service.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
-
-		session, err := store.Get(r, "session-name")
-		if err != nil {
-			log.Printf("Session error: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-		session.Options.MaxAge = -1
-		if err = session.Save(r, w); err != nil {
-			log.Printf("Session error: %v", err)
+		if err := authSvc.ClearSession(w, r); err != nil {
+			slog.Error("clearing session", "error", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 
 		w.Header().Set("HX-Redirect", "/login")
-		w.WriteHeader(http.StatusSeeOther)
+		w.WriteHeader(http.StatusOK)
 	}
 }

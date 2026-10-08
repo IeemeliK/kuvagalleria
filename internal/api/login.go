@@ -2,10 +2,8 @@ package api
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
-
-	"github.com/gorilla/sessions"
 
 	"github.com/IeemeliK/kuvagalleria/internal/service"
 	"github.com/IeemeliK/kuvagalleria/internal/templates"
@@ -21,28 +19,21 @@ type loginPageData struct {
 	HeaderData HeaderData
 }
 
-func LoginHandler(store *sessions.CookieStore, auth *service.AuthService) http.HandlerFunc {
+func LoginHandler(authSvc *service.AuthService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			handleLoginGet(w, r, store)
+			handleLoginGet(w, r, authSvc)
 		case http.MethodPost:
-			handleLoginPost(w, r, store, auth)
+			handleLoginPost(w, r, authSvc)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	}
 }
 
-func handleLoginGet(w http.ResponseWriter, r *http.Request, store *sessions.CookieStore) {
-	session, err := store.Get(r, "session-name")
-	if err != nil {
-		log.Printf("Session error: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	if session.Values["user_id"] != nil {
+func handleLoginGet(w http.ResponseWriter, r *http.Request, authSvc *service.AuthService) {
+	if _, ok := authSvc.IsAuthenticated(r); ok {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
@@ -50,7 +41,7 @@ func handleLoginGet(w http.ResponseWriter, r *http.Request, store *sessions.Cook
 	renderLogin(w, r, "")
 }
 
-func handleLoginPost(w http.ResponseWriter, r *http.Request, store *sessions.CookieStore, auth *service.AuthService) {
+func handleLoginPost(w http.ResponseWriter, r *http.Request, authSvc *service.AuthService) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
@@ -64,42 +55,25 @@ func handleLoginPost(w http.ResponseWriter, r *http.Request, store *sessions.Coo
 		return
 	}
 
-	userID, err := auth.Authenticate(r.Context(), username, password)
+	userID, err := authSvc.Authenticate(r.Context(), username, password)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidCredentials) {
 			renderLogin(w, r, InvalidCredentialsError)
 			return
 		}
-		log.Printf("Authentication error: %v", err)
+		slog.Error("authentication error", "error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	if err := saveUserSession(w, r, store, userID); err != nil {
-		log.Printf("Session error: %v", err)
+	if err := authSvc.SaveSession(w, r, userID); err != nil {
+		slog.Error("saving session", "error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("HX-Redirect", "/")
 	w.WriteHeader(http.StatusOK)
-}
-
-func saveUserSession(w http.ResponseWriter, r *http.Request, store *sessions.CookieStore, userID string) error {
-	session, err := store.Get(r, "session-name")
-	if err != nil {
-		return err
-	}
-
-	const sessionMaxAgeSeconds = 30 * 24 * 60 * 60
-	if session.Options == nil {
-		session.Options = &sessions.Options{}
-	}
-
-	session.Options.MaxAge = sessionMaxAgeSeconds
-	session.Values["user_id"] = userID
-
-	return session.Save(r, w)
 }
 
 func renderLogin(w http.ResponseWriter, r *http.Request, errorMsg string) {
@@ -116,7 +90,7 @@ func renderLogin(w http.ResponseWriter, r *http.Request, errorMsg string) {
 	}
 
 	if err := templates.Render(w, "login.html", layout, data); err != nil {
-		log.Printf("Template render error: %v", err)
+		slog.Error("rendering login template", "error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}
 }

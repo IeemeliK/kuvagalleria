@@ -2,16 +2,17 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/sessions"
 	"github.com/joho/godotenv"
 
-	"github.com/IeemeliK/kuvagalleria/internal/api"
 	"github.com/IeemeliK/kuvagalleria/internal/config"
 	"github.com/IeemeliK/kuvagalleria/internal/middleware"
 	"github.com/IeemeliK/kuvagalleria/internal/repository"
+	"github.com/IeemeliK/kuvagalleria/internal/router"
 	"github.com/IeemeliK/kuvagalleria/internal/service"
 	"github.com/IeemeliK/kuvagalleria/internal/templates"
 	"github.com/IeemeliK/kuvagalleria/web"
@@ -19,13 +20,17 @@ import (
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading env file(s)")
+		slog.Error("loading env file", "error", err)
+		os.Exit(1)
 	}
 
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("load config: %v", err)
+		slog.Error("loading config", "error", err)
+		os.Exit(1)
 	}
+
+	config.InitLogger(cfg)
 
 	database, err := repository.NewConnection(context.Background(), repository.Config{
 		User:     cfg.Database.User,
@@ -35,39 +40,30 @@ func main() {
 		DBName:   cfg.Database.DBName,
 	})
 	if err != nil {
-		log.Fatalf("connect to database: %v", err)
+		slog.Error("connecting to database", "error", err)
+		os.Exit(1)
 	}
 	defer func() {
 		if cerr := database.Close(); cerr != nil {
-			log.Printf("error closing database: %v", cerr)
+			slog.Warn("closing database", "error", cerr)
 		}
 	}()
 
 	if err := templates.Init(web.Templates()); err != nil {
-		log.Fatalf("init templates: %v", err)
+		slog.Error("initializing templates", "error", err)
+		os.Exit(1)
 	}
 
 	store := sessions.NewCookieStore([]byte(cfg.Session.Secret))
 
-	auth := &middleware.Authenticator{Store: store, DB: database}
-	authSvc := service.NewAuthService(database)
+	authSvc := service.NewAuthService(database, store)
+	authMdw := &middleware.Authenticator{Store: store, DB: database}
 
-	mux := http.NewServeMux()
+	handler := router.New(authSvc, authMdw)
 
-	// Static files (public)
-	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(web.StaticFS())))
-
-	// Public routes
-	mux.HandleFunc("/login", api.LoginHandler(store, authSvc))
-	mux.HandleFunc("/logout", api.LogoutHandler(store))
-
-	// Protected routes (auth middleware applied to the whole group)
-	protected := http.NewServeMux()
-	protected.HandleFunc("GET /", api.HomeHandler())
-	mux.Handle("/", auth.Middleware(protected))
-
-	log.Println("Server starting on :8080...")
-	if err := http.ListenAndServe(":8080", mux); err != nil {
-		log.Fatal("http.ListenAndServe:", err)
+	slog.Info("server starting", "addr", ":8080")
+	if err := http.ListenAndServe(":8080", handler); err != nil {
+		slog.Error("http listen and serve", "error", err)
+		os.Exit(1)
 	}
 }

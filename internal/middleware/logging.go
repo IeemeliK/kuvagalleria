@@ -1,8 +1,7 @@
-// Package middleware
 package middleware
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -10,9 +9,8 @@ import (
 func LoggingMiddleware(next http.Handler) http.Handler {
 	f := func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		log.Println(r.Method, r.URL.Path)
 		next.ServeHTTP(w, r)
-		log.Printf("Completed in %v", time.Since(start))
+		slog.Info("completed", "method", r.Method, "path", r.URL.Path, "duration", time.Since(start))
 	}
 	return http.HandlerFunc(f)
 }

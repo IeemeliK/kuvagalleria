@@ -9,6 +9,7 @@ type Config struct {
 	Database  DatabaseConfig
 	Session   SessionConfig
 	UploadDir string
+	LogLevel  string
 }
 
 type DatabaseConfig struct {
@@ -25,12 +26,12 @@ type SessionConfig struct {
 
 func Load() (Config, error) {
 	required := map[string]string{
-		"POSTGRES_USER":       "",
-		"POSTGRES_PASSWORD":   "",
-		"HOST":                "",
-		"PORT":                "",
-		"POSTGRES_DB":         "",
-		"COOKIESTORE_SECRET":  "",
+		"POSTGRES_USER":      "",
+		"POSTGRES_PASSWORD":  "",
+		"HOST":               "",
+		"PORT":               "",
+		"POSTGRES_DB":        "",
+		"COOKIESTORE_SECRET": "",
 	}
 
 	for k := range required {
@@ -46,6 +47,11 @@ func Load() (Config, error) {
 		uploadDir = "./data/uploads"
 	}
 
+	logLevel := os.Getenv("LOG_LEVEL")
+	if logLevel == "" {
+		logLevel = "info"
+	}
+
 	return Config{
 		Database: DatabaseConfig{
 			User:     required["POSTGRES_USER"],
@@ -58,5 +64,6 @@ func Load() (Config, error) {
 			Secret: required["COOKIESTORE_SECRET"],
 		},
 		UploadDir: uploadDir,
+		LogLevel:  logLevel,
 	}, nil
 }

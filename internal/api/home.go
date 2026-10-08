@@ -1,7 +1,7 @@
 package api
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/IeemeliK/kuvagalleria/internal/middleware"
@@ -28,7 +28,7 @@ func HomeHandler() http.HandlerFunc {
 		}
 
 		if err := templates.Render(w, "index.html", "", data); err != nil {
-			log.Printf("template render error: %v", err)
+			slog.Error("rendering home template", "error", err)
 			http.Error(w, "internal server error", http.StatusInternalServerError)
 		}
 	}
