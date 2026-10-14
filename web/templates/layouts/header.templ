@@ -1,0 +1,20 @@
+package layouts
+
+import "context"
+import "github.com/IeemeliK/kuvagalleria/internal/middleware"
+
+templ Header(ctx context.Context) {
+	<header class="navbar bg-base-100 shadow-sm">
+		<div class="flex-1">
+			<a class="btn btn-ghost text-xl">Kuvagalleria</a>
+		</div>
+		if name, ok := middleware.UsernameFromContext(); ok {
+			<div>
+				<span class="text-sm">{ name }</span>
+				<button class="btn btn-soft btn-error mx-2.5" hx-post="/logout" hx-boost="true">
+					Kirjaudu ulos
+				</button>
+			</div>
+		}
+	</header>
+}
