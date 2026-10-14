@@ -1,4 +1,4 @@
-package api
+package handlers
 
 type HeaderData struct {
 	Username string
