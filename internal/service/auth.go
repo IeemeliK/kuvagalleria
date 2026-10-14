@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/sessions"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/IeemeliK/kuvagalleria/internal/repository"
@@ -16,11 +17,11 @@ import (
 var ErrInvalidCredentials = errors.New("invalid username or password")
 
 type AuthService struct {
-	DB    *sql.DB
+	DB    *pgxpool.Pool
 	Store *sessions.CookieStore
 }
 
-func NewAuthService(db *sql.DB, store *sessions.CookieStore) *AuthService {
+func NewAuthService(db *pgxpool.Pool, store *sessions.CookieStore) *AuthService {
 	return &AuthService{DB: db, Store: store}
 }
 
@@ -83,7 +84,7 @@ func (s *AuthService) GetCurrentUser(r *http.Request) (userID, username string, 
 		return "", "", false
 	}
 
-	err := s.DB.QueryRowContext(
+	err := s.DB.QueryRow(
 		r.Context(),
 		"SELECT username FROM users WHERE user_id = $1",
 		userID,

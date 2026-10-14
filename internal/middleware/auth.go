@@ -6,7 +6,15 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+
+	"github.com/gorilla/sessions"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+type Authenticator struct {
+	Store *sessions.CookieStore
+	DB    *pgxpool.Pool
+}
 
 func (a *Authenticator) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +31,7 @@ func (a *Authenticator) Middleware(next http.Handler) http.Handler {
 		}
 
 		var username string
-		err = a.DB.QueryRowContext(r.Context(),
+		err = a.DB.QueryRow(r.Context(),
 			"SELECT username FROM users WHERE user_id = $1",
 			userID,
 		).Scan(&username)
