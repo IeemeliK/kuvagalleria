@@ -18,19 +18,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	cfg, err := config.Load()
+	cfg, err := config.New()
 	if err != nil {
 		slog.Error("loading config", "error", err)
 		os.Exit(1)
 	}
 
-	db, err := repository.NewConnection(context.Background(), repository.Config{
-		User:     cfg.Database.User,
-		Password: cfg.Database.Password,
-		Host:     "localhost",
-		Port:     cfg.Database.Port,
-		DBName:   cfg.Database.DBName,
-	})
+	db, err := repository.NewConnection(context.Background(), &cfg.Database)
 	if err != nil {
 		slog.Error("connecting to database", "error", err)
 		os.Exit(1)

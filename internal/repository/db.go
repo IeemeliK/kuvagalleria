@@ -7,18 +7,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/IeemeliK/kuvagalleria/internal/config"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-type Config struct {
-	User     string
-	Password string
-	Host     string
-	Port     string
-	DBName   string
-}
-
-func NewConnection(ctx context.Context, cfg Config) (*sql.DB, error) {
+func NewConnection(ctx context.Context, cfg *config.DatabaseConfig) (*pgxpool.Pool, error) {
 	dbURL := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s",
 		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DBName,

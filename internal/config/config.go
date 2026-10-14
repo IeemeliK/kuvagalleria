@@ -24,7 +24,7 @@ type SessionConfig struct {
 	Secret string
 }
 
-func Load() (Config, error) {
+func New() (*Config, error) {
 	required := map[string]string{
 		"POSTGRES_USER":      "",
 		"POSTGRES_PASSWORD":  "",
@@ -37,7 +37,7 @@ func Load() (Config, error) {
 	for k := range required {
 		v := os.Getenv(k)
 		if v == "" {
-			return Config{}, fmt.Errorf("required env var %q is not set or empty", k)
+			return &Config{}, fmt.Errorf("required env var %q is not set or empty", k)
 		}
 		required[k] = v
 	}
@@ -52,7 +52,7 @@ func Load() (Config, error) {
 		logLevel = "info"
 	}
 
-	return Config{
+	return &Config{
 		Database: DatabaseConfig{
 			User:     required["POSTGRES_USER"],
 			Password: required["POSTGRES_PASSWORD"],

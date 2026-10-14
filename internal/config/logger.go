@@ -5,13 +5,13 @@ import (
 	"os"
 )
 
-func InitLogger(cfg Config) {
+func (c *Config) InitLogger() {
 	level := new(slog.LevelVar)
 	level.Set(slog.LevelInfo)
 
 	var l slog.Level
-	if err := l.UnmarshalText([]byte(cfg.LogLevel)); err != nil {
-		slog.Warn("invalid log level, defaulting to info", "value", cfg.LogLevel)
+	if err := l.UnmarshalText([]byte(c.LogLevel)); err != nil {
+		slog.Warn("invalid log level, defaulting to info", "value", c.LogLevel)
 	} else {
 		level.Set(l)
 	}

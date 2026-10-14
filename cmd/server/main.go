@@ -24,30 +24,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	cfg, err := config.Load()
+	cfg, err := config.New()
 	if err != nil {
 		slog.Error("loading config", "error", err)
 		os.Exit(1)
 	}
 
-	config.InitLogger(cfg)
+	cfg.InitLogger()
 
-	database, err := repository.NewConnection(context.Background(), repository.Config{
-		User:     cfg.Database.User,
-		Password: cfg.Database.Password,
-		Host:     cfg.Database.Host,
-		Port:     cfg.Database.Port,
-		DBName:   cfg.Database.DBName,
-	})
+	dbpool, err := repository.NewConnection(context.Background(), &cfg.Database)
 	if err != nil {
 		slog.Error("connecting to database", "error", err)
 		os.Exit(1)
 	}
-	defer func() {
-		if cerr := database.Close(); cerr != nil {
-			slog.Warn("closing database", "error", cerr)
-		}
-	}()
+	defer dbpool.Close()
 
 	if err := templates.Init(web.Templates()); err != nil {
 		slog.Error("initializing templates", "error", err)
@@ -56,8 +46,8 @@ func main() {
 
 	store := sessions.NewCookieStore([]byte(cfg.Session.Secret))
 
-	authSvc := service.NewAuthService(database, store)
-	authMdw := &middleware.Authenticator{Store: store, DB: database}
+	authSvc := service.NewAuthService(dbpool, store)
+	authMdw := &middleware.Authenticator{Store: store, DB: dbpool}
 
 	handler := router.New(authSvc, authMdw)
 
