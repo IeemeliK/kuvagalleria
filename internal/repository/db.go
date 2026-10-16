@@ -4,6 +4,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/IeemeliK/kuvagalleria/internal/config"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -18,7 +19,14 @@ func NewConnectionPool(ctx context.Context, cfg *config.DatabaseConfig) (*pgxpoo
 
 	dbPool, err := pgxpool.New(ctx, dbURL)
 	if err != nil {
-		return nil, fmt.Errorf("open database: %w", err)
+		return nil, fmt.Errorf("open db connection pool: %w", err)
+	}
+
+	pingCtx, cancel := context.WithTimeout(ctx, time.Second*5)
+	defer cancel()
+	pingErr := dbPool.Ping(pingCtx)
+	if pingErr != nil {
+		return nil, fmt.Errorf("getting connection from pool: %w", pingErr)
 	}
 
 	return dbPool, nil
