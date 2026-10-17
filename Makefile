@@ -1,13 +1,14 @@
 composeFile := deployments/docker-compose.yaml
 composeDevFile := deployments/dev_compose.yaml
 composeFlags := -f $(composeFile) -f $(composeDevFile)
-cssBuild := bunx @tailwindcss/cli -i ./assets/input.css -o ./web/static/css/output.css
+cssBuild := bunx @tailwindcss/cli -i ./public/input.css -o ./public/static/css/output.css --minify
 
 include .env
 export
 
 .PHONY: build
-build: init prod_css
+build: init
+	$(cssBuild)
 	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -v -o ./bin/app ./cmd/server
 
 .PHONY: init
@@ -51,10 +52,6 @@ migrate-reset:
 .PHONY: seed
 seed:
 	go run ./scripts/seed/main.go
-
-.PHONY: prod_css
-prod_css:
-	$(cssBuild) --minify
 
 .PHONY: dev_css
 dev_css:

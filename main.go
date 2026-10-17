@@ -14,8 +14,6 @@ import (
 	"github.com/IeemeliK/kuvagalleria/internal/repository"
 	"github.com/IeemeliK/kuvagalleria/internal/router"
 	"github.com/IeemeliK/kuvagalleria/internal/service"
-	"github.com/IeemeliK/kuvagalleria/internal/templates"
-	"github.com/IeemeliK/kuvagalleria/web"
 )
 
 func main() {
@@ -32,17 +30,12 @@ func main() {
 
 	cfg.InitLogger()
 
-	dbpool, err := repository.NewConnection(context.Background(), &cfg.Database)
+	dbpool, err := repository.NewConnectionPool(context.Background(), &cfg.Database)
 	if err != nil {
 		slog.Error("connecting to database", "error", err)
 		os.Exit(1)
 	}
 	defer dbpool.Close()
-
-	if err := templates.Init(web.Templates()); err != nil {
-		slog.Error("initializing templates", "error", err)
-		os.Exit(1)
-	}
 
 	store := sessions.NewCookieStore([]byte(cfg.Session.Secret))
 

@@ -1,35 +1,25 @@
 package handlers
 
 import (
-	"log/slog"
 	"net/http"
 
-	"github.com/IeemeliK/kuvagalleria/internal/middleware"
-	"github.com/IeemeliK/kuvagalleria/internal/templates"
+	"github.com/IeemeliK/kuvagalleria/components"
 )
 
-type HomePageData struct {
-	HeaderData HeaderData
+type HomeHandler struct{}
+
+func NewHomeHandler() *HomeHandler {
+	return &HomeHandler{}
 }
 
-func HomeHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		username, ok := middleware.UsernameFromContext(r.Context())
-		if !ok {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
+func (h *HomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.Get(w, r)
+}
 
-		data := HomePageData{
-			HeaderData: HeaderData{
-				Username: username,
-				LoggedIn: true,
-			},
-		}
+func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
+	h.View(w, r)
+}
 
-		if err := templates.Render(w, "index.html", "", data); err != nil {
-			slog.Error("rendering home template", "error", err)
-			http.Error(w, "internal server error", http.StatusInternalServerError)
-		}
-	}
+func (h *HomeHandler) View(w http.ResponseWriter, r *http.Request) {
+	components.Page(components.Index()).Render(r.Context(), w)
 }

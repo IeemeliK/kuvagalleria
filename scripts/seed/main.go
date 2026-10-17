@@ -24,7 +24,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	db, err := repository.NewConnection(context.Background(), &cfg.Database)
+	db, err := repository.NewConnectionPool(context.Background(), &cfg.Database)
 	if err != nil {
 		slog.Error("connecting to database", "error", err)
 		os.Exit(1)
@@ -37,7 +37,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	_, err = db.ExecContext(
+	_, err = db.Exec(
 		context.Background(),
 		`INSERT INTO users (username, password_hash)
 		 VALUES ($1, $2)

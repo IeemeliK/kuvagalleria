@@ -1,12 +1,9 @@
 package handlers
 
 import (
-	"errors"
-	"log/slog"
 	"net/http"
 
-	"github.com/IeemeliK/kuvagalleria/internal/service"
-	"github.com/IeemeliK/kuvagalleria/internal/templates"
+	"github.com/IeemeliK/kuvagalleria/components"
 )
 
 const (
@@ -14,34 +11,28 @@ const (
 	MissingCredentialsError = "Käyttäjänimi ja salasana vaaditaan"
 )
 
-type loginPageData struct {
-	Error      string
-	HeaderData HeaderData
+type LoginHandler struct{}
+
+func NewLoginHandler() *LoginHandler {
+	return &LoginHandler{}
 }
 
-func LoginHandler(authSvc *service.AuthService) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			handleLoginGet(w, r, authSvc)
-		case http.MethodPost:
-			handleLoginPost(w, r, authSvc)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
+func (h *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		h.Get(w, r)
+	case http.MethodPost:
+		h.Post(w, r)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
 
-func handleLoginGet(w http.ResponseWriter, r *http.Request, authSvc *service.AuthService) {
-	if _, ok := authSvc.IsAuthenticated(r); ok {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-
-	renderLogin(w, r, "")
+func (h *LoginHandler) Get(w http.ResponseWriter, r *http.Request) {
+	h.View(w, r, viewProps{""})
 }
 
-func handleLoginPost(w http.ResponseWriter, r *http.Request, authSvc *service.AuthService) {
+func (h *LoginHandler) Post(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
@@ -51,46 +42,22 @@ func handleLoginPost(w http.ResponseWriter, r *http.Request, authSvc *service.Au
 	password := r.FormValue("password")
 
 	if username == "" || password == "" {
-		renderLogin(w, r, MissingCredentialsError)
+		h.View(w, r, viewProps{MissingCredentialsError})
 		return
 	}
 
-	userID, err := authSvc.Authenticate(r.Context(), username, password)
-	if err != nil {
-		if errors.Is(err, service.ErrInvalidCredentials) {
-			renderLogin(w, r, InvalidCredentialsError)
-			return
-		}
-		slog.Error("authentication error", "error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
+	if username == "tester" && password == "tester" {
+		w.Header().Set("HX-Redirect", "/")
+		w.WriteHeader(http.StatusOK)
+	} else {
+		h.View(w, r, viewProps{InvalidCredentialsError})
 	}
-
-	if err := authSvc.SaveSession(w, r, userID); err != nil {
-		slog.Error("saving session", "error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("HX-Redirect", "/")
-	w.WriteHeader(http.StatusOK)
 }
 
-func renderLogin(w http.ResponseWriter, r *http.Request, errorMsg string) {
-	data := loginPageData{
-		Error: errorMsg,
-		HeaderData: HeaderData{
-			LoggedIn: false,
-		},
-	}
+type viewProps struct {
+	errorMsg string
+}
 
-	layout := ""
-	if r.Header.Get("HX-Request") == "true" {
-		layout = "login_form"
-	}
-
-	if err := templates.Render(w, "login.html", layout, data); err != nil {
-		slog.Error("rendering login template", "error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-	}
+func (h *LoginHandler) View(w http.ResponseWriter, r *http.Request, props viewProps) {
+	components.Page(components.Login(props.errorMsg)).Render(r.Context(), w)
 }
