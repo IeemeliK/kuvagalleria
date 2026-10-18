@@ -11,14 +11,14 @@ import (
 func New(authSvc *service.AuthService, authMdw *middleware.Authenticator) http.Handler {
 	mux := http.NewServeMux()
 
-	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../../public/static/"))))
+	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public/static"))))
 
 	// mux.Handle("POST /logout", handlers.LogoutHandler(authSvc))
 	mux.Handle("/login", handlers.NewLoginHandler())
 
 	protected := http.NewServeMux()
 	protected.Handle("GET /", handlers.NewHomeHandler())
-	mux.Handle("/", authMdw.Middleware(protected))
+	mux.Handle("/", protected)
 
 	return middleware.LoggingMiddleware(mux)
 }
