@@ -1,4 +1,4 @@
-FROM golang:1.25.5 AS build
+FROM golang:1.27.1 AS build
 WORKDIR /usr/src/app
 
 SHELL [ "/bin/bash", "-o", "pipefail", "-c" ]

@@ -6,7 +6,7 @@ tmp_dir = "tmp"
 
 [build]
   args_bin = []
-  cmd = "templ generate && go build -o ./tmp/main ./cmd/server"
+  cmd = "go tool templ generate && go build -buildvcs=false -o ./tmp/main ."
   delay = 1000
   entrypoint = ["./tmp/main"]
   exclude_dir = ["assets", "tmp", "vendor", "testdata", "node_modules", "static"]
@@ -23,7 +23,7 @@ tmp_dir = "tmp"
   poll = false
   poll_interval = 0
   post_cmd = []
-  pre_cmd = ["make watch_css &"]
+  pre_cmd = ["make migrate-up && make seed && make watch_css &"]
   pre_cmd_delay = 0
   rerun = false
   rerun_delay = 500

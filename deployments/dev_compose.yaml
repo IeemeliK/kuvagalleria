@@ -6,9 +6,14 @@ services:
     build:
       context: ..
       dockerfile: deployments/Dockerfile.dev
-    volumes: [..:/usr/src/app, /usr/src/app/node_modules, ../data/uploads:/usr/src/app/data/uploads]
+    volumes:
+      - ..:/usr/src/app
+      - /usr/src/app/node_modules
+      - ../data/uploads:/usr/src/app/data/uploads
   pgAdmin:
+    container_name: kg-pgadmin
     image: dpage/pgadmin4:9.11.0
+    networks: [kuvagalleria_shared]
     env_file: [../.env]
     environment:
       PGADMIN_DISABLE_POSTFIX: true
@@ -16,3 +21,6 @@ services:
     volumes: [pgadmin_data:/var/lib/pgadmin]
 volumes:
   pgadmin_data:
+networks:
+  kuvagalleria_shared:
+    external: true

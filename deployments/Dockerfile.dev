@@ -1,9 +1,9 @@
-FROM golang:1.25.5
+FROM golang:1.27.1
 WORKDIR /usr/src/app
 
 RUN go install github.com/air-verse/air@latest
 
-RUN apt-get -y update && apt-get -y --no-install-recommends install unzip=6.0-29
+RUN apt-get -y update && apt-get -y --no-install-recommends install unzip
 RUN wget -qO- https://bun.com/install | ENV="$HOME/.bashrc" SHELL="$(which bash)" bash -
 ENV PATH="/root/.bun/bin:$PATH"
 

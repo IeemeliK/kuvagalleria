@@ -1,6 +1,8 @@
 ---
+name: kuvagalleria
 services:
   db:
+    container_name: kg-db
     image: postgres:18
     restart: unless-stopped
     # set shared memory limit when using docker compose
@@ -8,6 +10,7 @@ services:
     volumes: [postgres_data:/var/lib/postgresql]
     ports: [5432:5432]
     env_file: [../.env]
+    networks: [kuvagalleria_shared]
     healthcheck:
       test: [CMD-SHELL, 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
       interval: 10s
@@ -15,6 +18,7 @@ services:
       retries: 5
       start_period: 10s
   web:
+    container_name: kg-web
     depends_on:
       db:
         condition: service_healthy
@@ -24,6 +28,11 @@ services:
       dockerfile: deployments/Dockerfile
     ports: [8080:8080]
     volumes: [uploads_data:/usr/src/app/data/uploads]
+    networks: [kuvagalleria_shared]
 volumes:
   postgres_data:
   uploads_data:
+networks:
+  shared:
+    driver: bridge
+    name: kuvagalleria_shared

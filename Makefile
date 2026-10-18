@@ -18,8 +18,6 @@ init:
 .PHONY: dev_up
 dev_up: dev_css
 	docker compose --env-file .env $(composeFlags) up --build -d
-	$(MAKE) migrate-up
-	$(MAKE) seed
 
 .PHONY: dev_down
 dev_down:
@@ -31,23 +29,23 @@ dev_restart:
 
 .PHONY: migrate-up
 migrate-up:
-	goose up
+	go tool goose up
 
 .PHONY: migrate-down
 migrate-down:
-	goose down
+	go tool goose down
 
 .PHONY: migrate-status
 migrate-status:
-	goose status
+	go tool goose status
 
 .PHONY: migrate-create
 migrate-create:
-	goose create $(name) sql
+	go tool goose create $(name) sql
 
 .PHONY: migrate-reset
 migrate-reset:
-	goose reset
+	go tool goose reset
 
 .PHONY: seed
 seed:
