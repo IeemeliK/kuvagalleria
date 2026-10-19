@@ -5,12 +5,12 @@ import "github.com/IeemeliK/kuvagalleria/internal/middleware"
 templ Header() {
 	<header class="navbar bg-base-100 shadow-sm">
 		<div class="flex-1">
-			<a class="btn btn-ghost text-xl">Kuvagalleria</a>
+			<a class="btn btn-ghost text-xl" href="/" hx-boost="true">Kuvagalleria</a>
 		</div>
 		if name, ok := middleware.UsernameFromContext(ctx); ok {
 			<div>
 				<span class="text-sm">{ name }</span>
-				<button class="btn btn-soft btn-error mx-2.5" hx-post="/logout" hx-boost="true">
+				<button class="btn btn-soft btn-error mx-2.5" hx-post="/logout">
 					Kirjaudu ulos
 				</button>
 			</div>
